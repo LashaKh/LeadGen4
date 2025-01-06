@@ -9,13 +9,31 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [emailError, setEmailError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
+  const validateEmail = (email: string) => {
+    if (!email) return 'Email is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const emailValidationError = validateEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      return;
+    }
+    
     setLoading(true);
+    setEmailError('');
+
     let options = {};
     
     if (rememberMe) {
@@ -78,9 +96,19 @@ export default function Login() {
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-purple-900/30 rounded-lg bg-white/5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   placeholder="Email address"
+                  aria-invalid={!!emailError}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError('');
+                  }}
+                  onBlur={() => setEmailError(validateEmail(email))}
                 />
+                {emailError && (
+                  <p className="mt-1 text-sm text-red-500" role="alert">
+                    {emailError}
+                  </p>
+                )}
               </div>
             </div>
 

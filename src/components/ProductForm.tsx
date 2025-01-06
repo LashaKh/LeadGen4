@@ -6,6 +6,7 @@ import { FormInput } from './FormInput';
 import { FormTextArea } from './FormTextArea';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
+import { useGenerationHistory } from '../contexts/GenerationHistoryContext';
 
 interface FormData {
   productName: string;
@@ -25,6 +26,7 @@ export default function ProductForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { addGeneration } = useGenerationHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,22 +40,44 @@ export default function ProductForm() {
     setIsLoading(true);
 
     try {
-      const leads = await generateLeads(formData);
-      console.log('Webhook response:', leads);
-
-      if (!leads || leads.length === 0) {
-        showToast('No leads were generated. Please try different criteria.', 'error');
-        return;
+      console.log('Starting lead generation...');
+      const { success, sheetLink, error } = await generateLeads(formData);
+      
+      if (!success) {
+        throw new Error(error || 'Webhook request failed');
       }
+
+      if (!sheetLink) {
+        throw new Error('No Google Sheets link received from webhook');
+      }
+
+      addGeneration({
+        productName: formData.productName,
+        productDescription: formData.productDescription,
+        location: formData.location,
+        status: 'success',
+        sheetLink: sheetLink,
+        timestamp: new Date().toISOString()
+      });
 
       setFormData(initialFormData);
       showToast('Leads generated successfully!', 'success');
+      
       navigate('/app/leads');
     } catch (error) {
       console.error('Error generating leads:', error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'An unexpected error occurred while generating leads';
+      
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      addGeneration({
+        productName: formData.productName,
+        productDescription: formData.productDescription,
+        location: formData.location,
+        status: 'error',
+        errorMessage,
+        timestamp: new Date().toISOString()
+      });
+
       showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);

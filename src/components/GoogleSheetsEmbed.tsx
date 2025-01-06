@@ -36,7 +36,7 @@ export function GoogleSheetsEmbed({ spreadsheetId }: GoogleSheetsEmbedProps) {
   return (
     <div 
       ref={containerRef}
-      className={`w-full ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[600px]'} bg-white/5 rounded-lg overflow-hidden border border-purple-900/30 relative`}
+      className={`w-full ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[600px]'} bg-white/5 rounded-lg overflow-hidden border border-purple-900/30 relative shadow-lg`}
       style={{ isolation: 'isolate' }}
     >
       <button
@@ -76,11 +76,11 @@ export function GoogleSheetsEmbed({ spreadsheetId }: GoogleSheetsEmbedProps) {
       )}
       <iframe
         key={iframeKey}
-        src={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit?usp=sharing`}
+        src={`https://docs.google.com/spreadsheets/d/e/${spreadsheetId}/pubhtml?widget=true&amp;headers=false`}
         className="w-full h-full"
         style={{ border: 0, backgroundColor: 'transparent', minHeight: '600px' }}
-        frameBorder="0"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-downloads"
+        frameBorder="0" 
+        sandbox="allow-scripts allow-same-origin"
         title="Google Sheets"
         onLoad={() => setIsLoading(false)}
         onError={() => {

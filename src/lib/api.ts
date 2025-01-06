@@ -1,68 +1,66 @@
 import { FormData } from '../types';
 
-type LeadData = [string, string, string]; // [company, website, description]
+interface WebhookResponse {
+  success: boolean;
+  sheetLink?: string;
+  error?: string;
+}
 
-export async function generateLeads(formData: FormData) {
-  console.log('Sending request to webhook:', formData);
-
-  const response = await fetch('https://hook.eu2.make.com/r8kip3perjxr6tndcwn5c9bglff731ab', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      productName: formData.productName,
-      productDescription: formData.productDescription,
-      location: formData.location
-    })
-  });
-
-  let responseText;
-  if (!response.ok) {
-    try {
-      responseText = await response.text();
-      console.error('Webhook error response:', responseText);
-    } catch (e) {
-      console.error('Failed to read error response');
-    }
-    throw new Error(`Failed to connect to lead generation service: ${response.status}`);
-  }
-
+export async function generateLeads(formData: FormData): Promise<WebhookResponse> {
   try {
-    responseText = await response.text();
+    console.log('Sending webhook request with data:', formData);
     
-    if (!responseText) {
-      throw new Error('Empty response from service');
+    const response = await fetch('https://hook.eu2.make.com/8xqjvc4pyrhei7f1nc3w6364sqahzkj5', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        productName: formData.productName,
+        productDescription: formData.productDescription,
+        location: formData.location
+      })
+    });
+
+    console.log('Webhook response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Webhook error response:', errorText);
+      throw new Error(`Webhook failed with status ${response.status}: ${errorText}`);
     }
 
-    console.log('Raw webhook response:', responseText);
-    // Clean and parse the response
-    const cleanedResponse = responseText
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line => line.trim().replace(/,$/, ''))
-      .join(',');
-
-    const leads = JSON.parse(`[${cleanedResponse}]`) as LeadData[];
-
-    console.log('Parsed webhook response:', leads);
-
-    if (!Array.isArray(leads)) {
-      console.error('Invalid response structure:', leads);
-      throw new Error('Invalid response from lead generation service');
+    const responseData = await response.json();
+    console.log('Webhook response data:', responseData);
+    
+    if (!responseData.success) {
+      throw new Error(responseData.error || 'Webhook request failed');
     }
 
-    if (leads.length === 0) {
-      throw new Error('No leads generated');
-    }
-
-    return leads;
+    return responseData;
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      console.error('JSON parse error:', error, 'Response text:', responseText);
-      throw new Error('Invalid response format from lead generation service');
+    console.error('Webhook request failed:', error);
+    throw error;
+  }
+}
+
+export async function enrichLeads(): Promise<boolean> {
+  try {
+    const response = await fetch('https://hook.eu2.make.com/onkwar3s8ivyyz8wjve5g4x4pnp1l18j', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to enrich leads: ${response.status}`);
     }
+
+    return true;
+  } catch (error) {
+    console.error('Error enriching leads:', error);
     throw error;
   }
 }

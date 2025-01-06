@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import LeadsTablePage from './pages/LeadsTable';
+import GenerationHistory from './pages/GenerationHistory';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         }>
           <Route index element={<GenerateLeads />} />
           <Route path="leads" element={<LeadsTablePage />} />
+          <Route path="history" element={<GenerationHistory />} />
         </Route>
       </Routes>
     </BrowserRouter>

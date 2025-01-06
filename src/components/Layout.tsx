@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, ListChecks, LogOut } from 'lucide-react';
+import { Sparkles, ListChecks, LogOut, History } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout() {
@@ -19,8 +19,10 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <Sparkles className="h-8 w-8 text-purple-500" />
-              <span className="ml-2 text-xl font-bold text-white">LeadGen AI</span>
+              <Link to="/" className="flex items-center">
+                <Sparkles className="h-8 w-8 text-purple-500" />
+                <span className="ml-2 text-xl font-bold text-white">LeadGen AI</span>
+              </Link>
             </div>
             <div className="flex space-x-8">
               <Link
@@ -42,6 +44,17 @@ export default function Layout() {
                 }`}
               >
                 Leads
+              </Link>
+              <Link
+                to="/app/history"
+                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  location.pathname === '/app/history'
+                    ? 'text-purple-400 border-b-2 border-purple-500'
+                    : 'text-gray-300 hover:text-purple-400'
+                }`}
+              >
+                <History className="h-4 w-4 mr-1" />
+                History
               </Link>
               <button
                 onClick={handleSignOut}
